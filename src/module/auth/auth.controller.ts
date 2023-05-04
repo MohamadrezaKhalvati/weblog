@@ -20,7 +20,7 @@ export class AuthController {
 
 	@Post('updateUser')
 	@UseGuards(IsAdmin)
-	@ApiOperation({ operationId: 'updateUser' })
+	@ApiOperation({ operationId: 'updateUser', description: 'hello' })
 	@ApiBody({ required: true, type: UpdateUserInput })
 	@ApiResponse({ status: 200 })
 	async updateUser() {
