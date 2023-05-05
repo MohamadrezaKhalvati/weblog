@@ -1,1 +1,1 @@
-export default class Post {}
+export default class PostModel {}
