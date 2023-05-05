@@ -34,6 +34,7 @@ function setupSwagger(app: INestApplication) {
 	app.use('/api-doc', (_, res: ServerResponse) =>
 		res.end(JSON.stringify(document)),
 	)
+
 	return document
 }
 
