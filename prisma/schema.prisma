@@ -29,7 +29,7 @@ model Post {
   id       String    @id @default(uuid()) @db.Uuid
   title    String    @unique
   content  String
-  view     String    @default("0")
+  view     Int       @default(0)
   author   User      @relation(fields: [authorId], references: [id])
   authorId String    @db.Uuid
   Comment  Comment[]
