@@ -19,6 +19,10 @@ class CreateUserData {
 
 	@ApiProperty()
 	@IsString()
+	fullname: string
+
+	@ApiProperty()
+	@IsString()
 	confirmPassword: string
 
 	@ApiProperty()
