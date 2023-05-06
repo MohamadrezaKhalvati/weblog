@@ -3,6 +3,7 @@ import { Role } from '@prisma/client'
 import { Type } from 'class-transformer'
 import {
 	IsBoolean,
+	IsDateString,
 	IsEmail,
 	IsEnum,
 	IsOptional,
@@ -23,6 +24,11 @@ class ReadUserData {
 	@IsOptional()
 	@IsString()
 	fullname?: string
+
+	@ApiPropertyOptional()
+	@IsOptional()
+	@IsDateString()
+	birthDay?: string
 
 	@ApiPropertyOptional()
 	@IsOptional()

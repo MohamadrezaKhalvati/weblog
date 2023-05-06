@@ -6,6 +6,7 @@ import {
 	ApiResponse,
 } from '@nestjs/swagger'
 import { AuthService } from './auth.service'
+import { GetUserId } from './decorator/get-user-id.decorator'
 import CreateUserInput from './dto/create-user.input'
 import DeleteUserInput from './dto/delete-user.input'
 import LoginInput from './dto/login.input'
@@ -30,8 +31,11 @@ export class AuthController {
 	@ApiOperation({ operationId: 'updateUser', description: 'hello' })
 	@ApiBody({ required: true, type: UpdateUserInput })
 	@ApiResponse({ status: 200 })
-	async updateUser(@Body() input: UpdateUserInput) {
-		return await this.authService.updateUser(input)
+	async updateUser(
+		@Body() input: UpdateUserInput,
+		@GetUserId() requesterId: string,
+	) {
+		return await this.authService.updateUser(input, requesterId)
 	}
 
 	@Post('deleteUser')

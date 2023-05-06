@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
+import { Prisma } from '@prisma/client'
+import cleanDeep from 'clean-deep'
+import { createPaginationResult } from 'src/common/input/pagination.input'
 import { PrismaService } from '../prisma/prisma.service'
 import CreateUserInput from './dto/create-user.input'
 import DeleteUserInput from './dto/delete-user.input'
@@ -48,7 +51,32 @@ export class AuthService {
 		return user
 	}
 
-	async updateUser(input: UpdateUserInput) {}
+	// async verifyIfUsernameNotDuplicate(username : string){
+	// 	const duplicateduser = await this.prisma.user.findFirst({
+	// 		where : {
+	// 			username
+	// 		}
+	// 	})
+	// 	if(duplicateduser){
+	// 		console.log("duplicateduser");
+	// 	}
+	// 	return duplicateduser
+	// }
+
+	async updateUser(input: UpdateUserInput, requesterId: string) {
+		const { data, id } = input
+
+		await this.verifyUserExistance(id)
+
+		const myUsername = data.username
+		const myEmail = data.email
+		const isActive = data.isActive
+		const hashedPassword = ''
+
+		// if(!!data.username){
+		// 	myUsername	 = await this.
+		// }
+	}
 
 	async deleteUser(input: DeleteUserInput) {
 		const { data } = input
@@ -76,7 +104,30 @@ export class AuthService {
 		return user
 	}
 
-	async readUser(input: ReadUserInput) {}
+	async readUser(input: ReadUserInput) {
+		const rawWhere = input.data
+
+		let whereClause: Prisma.UserWhereInput = {
+			id: rawWhere.id,
+			birthDay: rawWhere.birthDay,
+			email: rawWhere.email,
+			role: rawWhere.role,
+			username: rawWhere.username,
+			isActive: rawWhere.isActive,
+			fullname: { mode: 'insensitive', contains: rawWhere.fullname },
+		}
+
+		whereClause = cleanDeep(whereClause)
+
+		const count = this.prisma.user.count({ where: whereClause })
+		const entity = this.prisma.user.findMany({
+			where: whereClause,
+			...input?.sortBy.convertToPrismaFilter(),
+			...input?.pagination.convertToPrismaFilter(),
+		})
+
+		return createPaginationResult({ count, entity })
+	}
 
 	private async verifyUserIsActive(id: string) {
 		if (id) {
