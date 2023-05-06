@@ -16,5 +16,5 @@ export default class LoginInput {
 	@ApiProperty()
 	@Type(() => LoginData)
 	@ValidateNested()
-	data: LoginInput
+	data: LoginData
 }
