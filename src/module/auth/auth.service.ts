@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
-import { Prisma } from '@prisma/client'
+import { Prisma, Role } from '@prisma/client'
 import cleanDeep from 'clean-deep'
 import { createPaginationResult } from 'src/common/input/pagination.input'
 import { PrismaService } from '../prisma/prisma.service'
@@ -212,5 +212,17 @@ export class AuthService {
 				console.log('duplicatedUser')
 			}
 		}
+	}
+
+	async verifyIfUserAdmin(id: string) {
+		const user = await this.prisma.user.findUnique({
+			where: { id: id },
+		})
+		if (user) {
+			if (!(user.role == Role.Admin)) {
+				console.log('user is not admin')
+			}
+		}
+		return user
 	}
 }

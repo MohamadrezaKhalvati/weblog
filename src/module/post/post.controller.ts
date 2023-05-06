@@ -1,5 +1,8 @@
-import { Body, Controller, Get, Post } from '@nestjs/common'
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common'
 import { ApiBody, ApiOperation } from '@nestjs/swagger'
+import { GetUserId } from '../auth/decorator/get-user-id.decorator'
+import { IsAdmin } from '../auth/guards/is-admin.guard'
+import { IsLoggedIn } from '../auth/guards/is-logged-in.guard'
 import CreatePostInput from './dto/create-post.input'
 import DeletePostInput from './dto/delete-post.input'
 import ReadPostInput from './dto/read-post.input'
@@ -13,6 +16,7 @@ export class PostController {
 	@Post('createPost')
 	@ApiOperation({ operationId: 'createPost' })
 	@ApiBody({ type: CreatePostInput })
+	@UseGuards(IsLoggedIn)
 	async createPost(@Body() input: CreatePostInput) {
 		return await this.postService.createPost(input)
 	}
@@ -20,6 +24,7 @@ export class PostController {
 	@Post('updatePost')
 	@ApiOperation({ operationId: 'updatePost' })
 	@ApiBody({ type: UpdatePostInput })
+	@UseGuards(IsAdmin)
 	async updatePost(@Body() input: UpdatePostInput) {
 		return await this.postService.updatePost(input)
 	}
@@ -27,13 +32,18 @@ export class PostController {
 	@Post('deletePost')
 	@ApiOperation({ operationId: 'deletePost' })
 	@ApiBody({ type: DeletePostInput })
-	async deletePost(@Body() input: DeletePostInput) {
-		return await this.postService.deletePost(input)
+	@UseGuards(IsAdmin)
+	async deletePost(
+		@Body() input: DeletePostInput,
+		@GetUserId() requesterId: string,
+	) {
+		return await this.postService.deletePost(input, requesterId)
 	}
 
 	@Get('readPost')
 	@ApiOperation({ operationId: 'readPost' })
 	@ApiBody({ type: ReadPostInput })
+	@UseGuards(IsLoggedIn)
 	async readPost(@Body() input: ReadPostInput) {
 		return await this.postService.readPost(input)
 	}
