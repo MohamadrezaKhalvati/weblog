@@ -26,7 +26,7 @@ export class PostService {
 		await this.authService.verifyIfUserAdmin(requesterId)
 	}
 
-	private async verifyIsPostExistance(id: string) {
+	async verifyIsPostExistance(id: string) {
 		const post = await this.prisma.post.findFirst({
 			where: { id },
 		})

@@ -17,26 +17,34 @@ export class CommentController {
 	@ApiBody({ type: CreateCommentInput })
 	@UseGuards(IsLoggedIn)
 	@ApiResponse({ status: 200 })
-	async createComment(@Body() input: CreateCommentInput) {}
+	async createComment(@Body() input: CreateCommentInput) {
+		return await this.commentService.createComment(input)
+	}
 
 	@Post('updateComment')
 	@ApiOperation({ operationId: 'updateComment' })
 	@ApiBody({ type: UpdateCommentInput })
 	@UseGuards(IsAdmin)
 	@ApiResponse({ status: 200 })
-	async updateComment() {}
+	async updateComment(@Body() input: UpdateCommentInput) {
+		return await this.commentService.updateComment(input)
+	}
 
 	@Get('readComment')
 	@ApiOperation({ operationId: 'readComment' })
 	@ApiBody({ type: ReadCommentInput })
 	@UseGuards(IsAdmin)
 	@ApiResponse({ status: 200 })
-	async readComment() {}
+	async readComment(@Body() input: ReadCommentInput) {
+		return await this.commentService.readComment(input)
+	}
 
 	@Post('deleteComment')
 	@ApiOperation({ operationId: 'deleteComment' })
 	@ApiBody({ type: DeleteCommentInput })
 	@UseGuards(IsAdmin)
 	@ApiResponse({ status: 200 })
-	async deleteComment() {}
+	async deleteComment(@Body() input: DeleteCommentInput) {
+		return await this.commentService.deleteComment(input)
+	}
 }

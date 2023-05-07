@@ -8,5 +8,6 @@ import { PostService } from './post.service'
 	controllers: [PostController],
 	providers: [PostService],
 	imports: [AuthModule, PrismaModule],
+	exports: [PostService],
 })
 export class PostModule {}

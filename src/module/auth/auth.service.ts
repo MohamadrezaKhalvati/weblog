@@ -92,7 +92,7 @@ export class AuthService {
 		return user
 	}
 
-	private async verifyUserExistance(id: string) {
+	async verifyUserExistance(id: string) {
 		const user = await this.prisma.user.findUnique({
 			where: {
 				id: id,
