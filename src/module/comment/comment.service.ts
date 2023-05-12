@@ -62,16 +62,35 @@ export class CommentService {
 
 		await this.verifyIfCommentExistance(id)
 
-		const myContent = data.content
 		let myauthorId = data.authorId
-		const MyrelatedPostId = data.relatedPostId
+		let relatedPostId = data.relatedPostId
 
-		if (!!myauthorId) {
-			myauthorId = await this.prisma.comment.findUnique({
-				where: { id: id },
-				select: { authorId: true },
-			})
+		if (data.authorId) {
+			myauthorId = await this.authService.verifyUserExistance(
+				data.authorId,
+			)
 		}
+
+		if (data.relatedPostId) {
+			relatedPostId = await this.PostService.verifyIsPostExistance(
+				data.relatedPostId,
+			)
+		}
+
+		const dataClause: Prisma.CommentWhereInput = {
+			authorId: myauthorId,
+			content: data.content,
+			postId: relatedPostId,
+		}
+
+		const comment = await this.prisma.comment.update({
+			where: {
+				id: id,
+			},
+			data: dataClause,
+		})
+
+		return comment
 	}
 
 	async deleteComment(input: DeleteCommentInput) {
