@@ -178,6 +178,7 @@ export class AuthService {
 	private signPayload(input: JwtPayloadType) {
 		return this.jwt.sign(input)
 	}
+
 	// TO DO
 	private async createHashedPassword(password: string) {
 		return password

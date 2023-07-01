@@ -14,10 +14,10 @@ model User {
   email       String    @unique
   password    String
   birthDay    DateTime?
-  role        Role      @default(Member)
-  isActive    Boolean   @default(true)
-  createdDate DateTime  @default(now())
-  updatedDate DateTime  @updatedAt
+  role        Role?     @default(Member)
+  isActive    Boolean?  @default(true)
+  createdDate DateTime? @default(now())
+  updatedDate DateTime? @updatedAt
   Post        Post[]
   Comment     Comment[]
 }
@@ -27,7 +27,7 @@ model Post {
   title    String    @unique
   content  String
   view     Int       @default(0)
-  author   User      @relation(fields: [authorId], references: [id])
+  author   User?     @relation(fields: [authorId], references: [id])
   authorId String    @db.Uuid
   Comment  Comment[]
 }
@@ -37,7 +37,7 @@ model Comment {
   content     String
   author      User   @relation(fields: [authorId], references: [id])
   authorId    String @db.Uuid
-  relatedPost Post   @relation(fields: [postId], references: [id])
+  relatedPost Post?  @relation(fields: [postId], references: [id])
   postId      String @db.Uuid
 }
 

@@ -62,26 +62,22 @@ export class CommentService {
 
 		await this.verifyIfCommentExistance(id)
 
-		let myauthorId = data.authorId
-		let relatedPostId = data.relatedPostId
+		const authorId = data.authorId
+		const relatedPostId = data.relatedPostId
 
-		if (data.authorId) {
-			myauthorId = await this.authService.verifyUserExistance(
-				data.authorId,
-			)
+		if (authorId) {
+			await this.authService.verifyUserExistance(authorId)
 		}
 
-		if (data.relatedPostId) {
-			relatedPostId = await this.PostService.verifyIsPostExistance(
-				data.relatedPostId,
-			)
+		if (relatedPostId) {
+			await this.PostService.verifyIsPostExistance(relatedPostId)
 		}
 
-		const dataClause: Prisma.CommentWhereInput = {
-			authorId: myauthorId,
-			content: data.content,
-			postId: relatedPostId,
-		}
+		// const dataClause: Prisma.CommentUpdateInput = {
+		// 	author: data.authorId,
+		// 	content: data.content,
+		// 	relatedPost: data.relatedPostId,
+		// }
 
 		const comment = await this.prisma.comment.update({
 			where: {

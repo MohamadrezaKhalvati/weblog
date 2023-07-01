@@ -43,7 +43,6 @@ function setupCors(app: INestApplication) {
 }
 
 function setupGlobalValidation(app: INestApplication) {
-	// app.useGlobalFilters(new CoreExceptionFilter())
 	app.useGlobalPipes(new ValidationPipe({ transform: true }))
 }
 
