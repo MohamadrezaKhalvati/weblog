@@ -42,6 +42,16 @@ class UpdateUserData {
 	@IsOptional()
 	@IsBoolean()
 	isActive?: boolean
+
+	@ApiPropertyOptional()
+	@IsOptional()
+	@IsString()
+	password: string
+
+	@ApiPropertyOptional()
+	@IsOptional()
+	@IsString()
+	confirmPassword: string
 }
 
 export default class UpdateUserInput {

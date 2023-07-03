@@ -79,14 +79,14 @@ export class CommentService {
 		// 	relatedPost: data.relatedPostId,
 		// }
 
-		const comment = await this.prisma.comment.update({
-			where: {
-				id: id,
-			},
-			data: dataClause,
-		})
+		// const comment = await this.prisma.comment.update({
+		// 	where: {
+		// 		id: id,
+		// 	},
+		// 	data: dataClause,
+		// })
 
-		return comment
+		// return comment
 	}
 
 	async deleteComment(input: DeleteCommentInput) {

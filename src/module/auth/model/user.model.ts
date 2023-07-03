@@ -22,4 +22,7 @@ export default class UserModel {
 
 	@ApiProperty()
 	updatedData: Date
+
+	@ApiProperty()
+	birthday: Date
 }

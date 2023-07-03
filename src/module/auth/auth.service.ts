@@ -17,11 +17,12 @@ export class AuthService {
 		id: true,
 		username: true,
 		fullname: true,
-		birthday: true,
+		birthDay: true,
 		role: true,
 		isActive: true,
 		email: true,
 	}
+
 	constructor(private prisma: PrismaService, private jwt: JwtService) {}
 
 	async createUser(input: CreateUserInput) {
@@ -51,31 +52,81 @@ export class AuthService {
 		return user
 	}
 
-	// async verifyIfUsernameNotDuplicate(username : string){
-	// 	const duplicateduser = await this.prisma.user.findFirst({
-	// 		where : {
-	// 			username
-	// 		}
-	// 	})
-	// 	if(duplicateduser){
-	// 		console.log("duplicateduser");
-	// 	}
-	// 	return duplicateduser
-	// }
+	async verifyIfUsernameNotDuplicate(username: string) {
+		const duplicateduser = await this.prisma.user.findFirst({
+			where: {
+				username,
+			},
+		})
+		if (duplicateduser) {
+			console.log('duplicateduser')
+		}
+		return duplicateduser
+	}
 
 	async updateUser(input: UpdateUserInput, requesterId: string) {
 		const { data, id } = input
 
 		await this.verifyUserExistance(id)
 
-		const myUsername = data.username
-		const myEmail = data.email
+		let myUsername = data.username
+		let myEmail = data.email
 		const isActive = data.isActive
-		const hashedPassword = ''
+		let hashedPassword = ''
 
-		// if(!!data.username){
-		// 	myUsername	 = await this.
-		// }
+		if (!!data.username) {
+			myUsername = await this.veirfyIfUserNotDuplicated(id, requesterId)
+		}
+
+		if (!!data.email) {
+			myEmail = await this.verifyIsEmailNotDuplicate(id, data.email)
+		}
+
+		if (!!data.role || !!data.isActive) {
+			await this.verifyAdminUser(requesterId)
+		}
+
+		if (!!data.password) {
+			if (!data.confirmPassword) {
+				// throw Errors.createClientError({
+				// 	code: 11,
+				// 	module: ModuleNames.AuthModule,
+				// })
+				console.log('err')
+			}
+			await this.verifyPasswordEqualToConfirmPassword(
+				data.password,
+				data.confirmPassword,
+			)
+			hashedPassword = await this.createHashedPassword(data.password)
+		}
+
+		let whereClause: Prisma.UserUpdateInput = {
+			birthDay: data.birthday,
+			email: myEmail,
+			fullname: data.fullname,
+			username: myUsername,
+			password: hashedPassword,
+			isActive: isActive,
+		}
+		whereClause = cleanDeep(whereClause)
+		// const updatedUser = await this.prisma.user.update({
+		// 	where: {
+		// 		id: id,
+		// 	},
+		// 	data: whereClause,
+		// })
+
+		// return updatedUser
+	}
+
+	private verifyPasswordEqualToConfirmPassword(
+		password: string,
+		confirmPassword: string,
+	) {
+		if (password !== confirmPassword) {
+			console.log('password is not equal to confirm password')
+		}
 	}
 
 	async deleteUser(input: DeleteUserInput) {
@@ -105,9 +156,9 @@ export class AuthService {
 	}
 
 	async readUser(input: ReadUserInput) {
-		const rawWhere = input.data
+		const rawWhere = input.data || {}
 
-		let whereClause: Prisma.UserWhereInput = {
+		const whereClause: Prisma.UserWhereInput = {
 			id: rawWhere.id,
 			birthDay: rawWhere.birthDay,
 			email: rawWhere.email,
@@ -117,16 +168,49 @@ export class AuthService {
 			fullname: { mode: 'insensitive', contains: rawWhere.fullname },
 		}
 
-		whereClause = cleanDeep(whereClause)
-
 		const count = this.prisma.user.count({ where: whereClause })
 		const entity = this.prisma.user.findMany({
 			where: whereClause,
-			...input?.sortBy.convertToPrismaFilter(),
-			...input?.pagination.convertToPrismaFilter(),
+			...input?.sortBy?.convertToPrismaFilter(),
+			...input?.pagination?.convertToPrismaFilter(),
 		})
 
 		return createPaginationResult({ count, entity })
+	}
+
+	async login(input: LoginInput) {
+		const user = await this.verifyUserForLogin(input)
+		await this.verifyUserIsActive(user.id)
+
+		const payload: JwtPayloadType = {
+			id: user.id,
+			role: user.role,
+			username: user.username,
+		}
+
+		const token = await this.signPayload(payload)
+		return { jwt: token }
+	}
+
+	private signPayload(input: JwtPayloadType) {
+		return this.jwt.sign(input)
+	}
+
+	// TO DO
+	private async createHashedPassword(password: string) {
+		return password
+	}
+
+	async verifyIfUserAdmin(id: string) {
+		const user = await this.prisma.user.findUnique({
+			where: { id: id },
+		})
+		if (user) {
+			if (!(user.role == Role.Admin)) {
+				console.log('user is not admin')
+			}
+		}
+		return user
 	}
 
 	private async verifyUserIsActive(id: string) {
@@ -161,29 +245,6 @@ export class AuthService {
 		return user
 	}
 
-	async login(input: LoginInput) {
-		const user = await this.verifyUserForLogin(input)
-		await this.verifyUserIsActive(user.id)
-
-		const payload: JwtPayloadType = {
-			id: user.id,
-			role: user.role,
-			username: user.role,
-		}
-
-		const token = await this.signPayload(payload)
-		return { jwt: token }
-	}
-
-	private signPayload(input: JwtPayloadType) {
-		return this.jwt.sign(input)
-	}
-
-	// TO DO
-	private async createHashedPassword(password: string) {
-		return password
-	}
-
 	private async verifyConfirmPasswordEqualToPassword(
 		password: string,
 		confirmPassword: string,
@@ -192,6 +253,7 @@ export class AuthService {
 			console.log('verifyConfirmPasswordEqualToPassword')
 		}
 	}
+
 	private async verifyUserNotDuplicate(username: string, email: string) {
 		if (username) {
 			const duplicatedUser = await this.prisma.user.findUnique({
@@ -215,15 +277,70 @@ export class AuthService {
 		}
 	}
 
-	async verifyIfUserAdmin(id: string) {
-		const user = await this.prisma.user.findUnique({
-			where: { id: id },
+	private async verifyAdminUser(requesterId: string) {
+		const foundUser = await this.prisma.user.findFirst({
+			where: {
+				id: requesterId,
+				role: Role.Admin,
+			},
 		})
-		if (user) {
-			if (!(user.role == Role.Admin)) {
-				console.log('user is not admin')
+
+		if (!foundUser)
+			// throw Errors.createClientError({
+			// 	code: 2,
+			// 	module: ModuleNames.EventModule,
+			// })
+			console.log('err')
+	}
+
+	private async verifyIsEmailNotDuplicate(
+		requesterId: string,
+		email: string,
+	) {
+		const duplicateUser = await this.prisma.user.findMany({
+			where: { email: email },
+		})
+
+		if (duplicateUser.length == 1) {
+			if (duplicateUser[0].id == requesterId) {
+				email = null
+				return email
+			} else {
+				// throw Errors.createClientError({
+				// 	code: 4,
+				// 	module: ModuleNames.AuthModule,
+				// })
+				console.log('err')
 			}
+		} else if (duplicateUser.length > 1) {
+			// throw Errors.createClientError({
+			// 	code: 4,
+			// 	module: ModuleNames.AuthModule,
+			// })
+			console.log('err')
 		}
-		return user
+
+		return email.toLowerCase()
+	}
+
+	private async veirfyIfUserNotDuplicated(
+		requesterId: string,
+		username: string,
+	) {
+		const duplicateUser = await this.prisma.user.findMany({
+			where: { username },
+		})
+
+		if (duplicateUser.length == 1) {
+			if (duplicateUser[0].id == requesterId) {
+				username = null
+				return username
+			} else {
+				console.log('sdfsfd')
+			}
+		} else if (duplicateUser.length > 1) {
+			console.log('sdfsdf')
+		}
+		return username.toLowerCase()
 	}
 }

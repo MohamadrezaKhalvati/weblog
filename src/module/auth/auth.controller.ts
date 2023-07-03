@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common'
+import { Body, Controller, Post, UseGuards } from '@nestjs/common'
 import {
 	ApiBody,
 	ApiOkResponse,
@@ -47,9 +47,10 @@ export class AuthController {
 		return await this.authService.deleteUser(input)
 	}
 
-	@Get('readUser')
+	@Post('readUser')
 	@UseGuards(IsAdmin)
 	@ApiOperation({ operationId: 'readUser' })
+	@ApiBody({ type: ReadUserInput })
 	@ApiResponse({ status: 200 })
 	async readUser(@Body() input: ReadUserInput) {
 		return await this.authService.readUser(input)
@@ -59,6 +60,7 @@ export class AuthController {
 	@ApiOperation({ operationId: 'login' })
 	@ApiOkResponse({ status: 200 })
 	async login(@Body() input: LoginInput) {
+		console.log(input)
 		return await this.authService.login(input)
 	}
 }
