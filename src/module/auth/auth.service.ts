@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { Prisma, Role } from '@prisma/client'
-import cleanDeep from 'clean-deep'
 import { createPaginationResult } from 'src/common/input/pagination.input'
 import { PrismaService } from '../prisma/prisma.service'
 import CreateUserInput from './dto/create-user.input'
@@ -74,19 +73,22 @@ export class AuthService {
 		const isActive = data.isActive
 		let hashedPassword = ''
 
-		if (!!data.username) {
-			myUsername = await this.veirfyIfUserNotDuplicated(id, requesterId)
+		if (data.username) {
+			myUsername = await this.veirfyIfUserNotDuplicated(
+				requesterId,
+				data.username,
+			)
 		}
 
-		if (!!data.email) {
+		if (data.email) {
 			myEmail = await this.verifyIsEmailNotDuplicate(id, data.email)
 		}
 
-		if (!!data.role || !!data.isActive) {
+		if (data.role || data.isActive) {
 			await this.verifyAdminUser(requesterId)
 		}
 
-		if (!!data.password) {
+		if (data.password) {
 			if (!data.confirmPassword) {
 				// throw Errors.createClientError({
 				// 	code: 11,
@@ -101,7 +103,7 @@ export class AuthService {
 			hashedPassword = await this.createHashedPassword(data.password)
 		}
 
-		let whereClause: Prisma.UserUpdateInput = {
+		const whereClause: Prisma.UserUpdateInput = {
 			birthDay: data.birthday,
 			email: myEmail,
 			fullname: data.fullname,
@@ -109,15 +111,16 @@ export class AuthService {
 			password: hashedPassword,
 			isActive: isActive,
 		}
-		whereClause = cleanDeep(whereClause)
-		// const updatedUser = await this.prisma.user.update({
-		// 	where: {
-		// 		id: id,
-		// 	},
-		// 	data: whereClause,
-		// })
 
-		// return updatedUser
+		// whereClause = cleanDeep(whereClause)
+		const updatedUser = await this.prisma.user.update({
+			where: {
+				id: id,
+			},
+			data: whereClause,
+		})
+
+		return updatedUser
 	}
 
 	private verifyPasswordEqualToConfirmPassword(
@@ -336,7 +339,7 @@ export class AuthService {
 				username = null
 				return username
 			} else {
-				console.log('sdfsfd')
+				console.log('username is duplicated')
 			}
 		} else if (duplicateUser.length > 1) {
 			console.log('sdfsdf')
